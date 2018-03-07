@@ -11,10 +11,10 @@ import java.io.File;
  */
 public class Test {
     public static void main(String[] args) {
-        MacroProcessor processor = new MacroProcessor("F:\\compile\\macrodefine.txt");
+        MacroProcessor processor = new MacroProcessor("F:\\compile\\MyCompiler\\macrodefine.txt");
         processor.printMacroDefineMap();
         try {
-            String regExp = processor.processRegExp("F:\\compile\\regExp.txt");
+            String regExp = processor.processRegExp("F:\\compile\\MyCompiler\\regExp.txt");
             System.out.println(regExp);
         } catch (RegularMacroException e) {
             e.printStackTrace();

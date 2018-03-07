@@ -63,6 +63,9 @@ public class MacroProcessor {
                 return content;
             } else {
                 String macroName = getFirstMacroName(content);
+                if(macroName == null){
+                    return content;
+                }
                 String define = mDefineMap.get(macroName);
                 if (define == null) {
                     throw new RegularMacroException("没有发现'" + macro + "'的宏定义");
@@ -77,9 +80,10 @@ public class MacroProcessor {
 
     private String getFirstMacroName(String macro) throws RegularMacroException {
         StringBuilder sb = new StringBuilder();
+        boolean inQuot = false;
         for (int i = 0; i < macro.length(); i++) {
             char c = macro.charAt(i);
-            if (c == '{') {
+            if (c == '{' && !inQuot) {
                 int j = i + 1;
                 while (macro.charAt(j) != '}' && j <= macro.length()) {
                     sb.append(macro.charAt(j));
@@ -89,9 +93,11 @@ public class MacroProcessor {
                     throw new RegularMacroException("错误的表达式,缺少 '}',macro = " + macro);
                 }
                 return sb.toString();
+            } else if (c == '"') {
+                inQuot = !inQuot;
             }
         }
-        throw new RegularMacroException("找不到,缺少 '{',macro = " + macro);
+        return null;
     }
 
     //返回 {xxx}
@@ -101,7 +107,7 @@ public class MacroProcessor {
             if (input.ii_lookahead(1) != '\n' && input.ii_lookahead(1) != Input.EOF) {
                 sb.append(InputUtils.getNextChar(input));
             } else if (input.ii_lookahead(1) == Input.EOF) {
-                throw new RegularMacroException("错误的表达式,缺少 '}',lineNum:,"+input.ii_lineno());
+                throw new RegularMacroException("错误的表达式,缺少 '}',lineNum:," + input.ii_lineno());
             }
         }
         sb.append(InputUtils.getNextChar(input));
