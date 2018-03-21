@@ -3,6 +3,7 @@ package regular;
 import inputsystem.Input;
 import inputsystem.InputUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,8 @@ public class MacroProcessor {
         }
     }
 
-    public String processRegExp(String regExpFileName) throws RegularMacroException {
+    public ArrayList<String> processRegExp(String regExpFileName) throws RegularMacroException {
+        ArrayList<String> list = new ArrayList<>();
         Input input = new Input();
         input.ii_newFile(regExpFileName);
         input.ii_advance();
@@ -49,11 +51,15 @@ public class MacroProcessor {
             } else if (input.ii_lookahead(1) == '"') {
                 inQuot = !inQuot;
                 sb.append(InputUtils.getNextChar(input));
-            } else {
+            } else if(input.ii_lookahead(1) == '\r' || input.ii_lookahead(1) == '\n'){
+                list.add(sb.toString());
+                InputUtils.skipSpace(input);
+                sb.setLength(0);
+            }else {
                 sb.append(InputUtils.getNextChar(input));
             }
         }
-        return sb.toString();
+        return list;
     }
 
     private String expandMacro(String macro) throws RegularMacroException {
