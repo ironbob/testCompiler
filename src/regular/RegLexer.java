@@ -15,8 +15,10 @@ public class RegLexer {
 
     boolean inQuoted = false;
 
+    private Token mCurToken;
+
     public enum TokenType {
-        EOS,
+        EOS,//正则表达式末尾
         ANY,//.通配符
         START_BOL,//^开头匹配
         END_BOL,//$末尾匹配
@@ -35,10 +37,14 @@ public class RegLexer {
         PLUS,// +
     }
 
+    public String getReg() {
+        return mCurReg;
+    }
+
     public static class Token {
-        TokenType type;
-        char value;
-        String desc;
+        public TokenType type;
+        public byte value;
+        public String desc;
 
         @Override
         public String toString() {
@@ -52,7 +58,7 @@ public class RegLexer {
                 sb.append("---");
                 sb.append(desc);
             } else {
-                sb.append(value);
+                sb.append(Utils.getPrintableByte(value));
             }
             return sb.toString();
         }
@@ -81,13 +87,30 @@ public class RegLexer {
     public void prepareLex(String regExpr) {
         mCurReg = regExpr;
         index = 0;
+        mCurToken = null;
     }
 
     public boolean hasNext() {
         return index < mCurReg.length();
     }
 
-    public Token nextToken() throws RegularMacroException {
+    public Token advance() throws RegularMacroException {
+        mCurToken = nextToken();
+        return mCurToken;
+    }
+
+    public boolean matchToken(TokenType type) {
+        if (mCurToken != null) {
+            return mCurToken.type == type;
+        }
+        return false;
+    }
+
+    public Token getCurrentToken() {
+        return mCurToken;
+    }
+
+    private Token nextToken() throws RegularMacroException {
         while (index < mCurReg.length()) {
             char c = mCurReg.charAt(index);
             if (c == '"') {
@@ -105,18 +128,21 @@ public class RegLexer {
                     index++;
                     Token token = new Token();
                     token.type = tokenMap[c];
-                    token.value = c;
+                    token.value = (byte) c;
                     return token;
                 }
             } else {
                 index++;
                 Token token = new Token();
                 token.type = tokenMap[c];
-                token.value = c;
+                token.value = (byte) c;
                 return token;
             }
         }
-        throw new RegularMacroException("非法表达式，没有找到正确的token:" + mCurReg);
+        Token token = new Token();
+        token.type = TokenType.EOS;
+        mCurToken = token;
+        return token;
     }
 
     /*当转移符 \ 存在时，它必须与跟在它后面的字符或字符串一起解读
@@ -137,7 +163,7 @@ public class RegLexer {
     private Token getNextEscToken(int start) throws RegularMacroException {
         char c = mCurReg.charAt(start);
         String strC = String.valueOf(c).toUpperCase();
-        char val = 0;
+        byte val = 0;
         char upC = strC.charAt(0);
         String desc = "";
         switch (upC) {
@@ -172,10 +198,14 @@ public class RegLexer {
             case 'X':
                 index++;
                 return getHexToken();
-                default:
-                {
-                    return getOctToken();
-                }
+            case '^':
+                index++;
+                val = (byte) (mCurReg.charAt(index) - '@');
+                desc = "控制字符^" + mCurReg.charAt(index);
+                break;
+            default: {
+                return getOctToken();
+            }
         }
         Token token = new Token();
         token.type = tokenMap[val];
@@ -187,6 +217,7 @@ public class RegLexer {
 
     /**
      * 8进制
+     *
      * @return
      */
     private Token getOctToken() throws RegularMacroException {
@@ -214,6 +245,7 @@ public class RegLexer {
 
     /**
      * 16进制数字
+     *
      * @return
      * @throws RegularMacroException
      */
@@ -234,7 +266,7 @@ public class RegLexer {
         if (value > 0) {
             Token token = new Token();
             token.type = TokenType.L;
-            token.desc = "数字:" + String.valueOf(value);
+            token.desc = "16进制转换数字:" + String.valueOf(value);
             return token;
         }
         throw new RegularMacroException("非法表达式，没有找到正确的 HexToken:" + mCurReg);

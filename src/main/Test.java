@@ -1,12 +1,12 @@
 package main;
 
-import inputsystem.Input;
+import lexer.NfaPaire;
+import lexer.ThomposonConstrutor;
 import regular.MacroProcessor;
 import regular.RegLexer;
 import regular.RegularMacroException;
 import tools.LogUtil;
 
-import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -28,12 +28,22 @@ public class Test {
             RegLexer regLexer = new RegLexer();
             regLexer.prepareLex("[\\b\\r\\n]");
             regLexer.prepareLex("[\"+*?\"]");
-            regLexer.prepareLex("[\\x1F]");
-            regLexer.prepareLex("[\\71]");
+            regLexer.prepareLex("[\\x1f]");
+            regLexer.prepareLex("[\\71a-z]");
+            regLexer.prepareLex("[\\^Aaa");
             while(regLexer.hasNext()){
-                RegLexer.Token token = regLexer.nextToken();
+                RegLexer.Token token = regLexer.advance();
                 System.out.println(token.toString());
             }
+            LogUtil.printBound("汤普森构造");
+            ThomposonConstrutor construtor = new ThomposonConstrutor();
+            construtor.prepare("[1-9]");
+            construtor.prepare("[acd]");
+            construtor.prepare("[^acd]");
+            construtor.prepare("[^a-z]");
+//            construtor.prepare("[\\^Aa-z]");
+            NfaPaire paire = construtor.term();
+            System.out.println(paire.toString());
         } catch (RegularMacroException e) {
             e.printStackTrace();
         }

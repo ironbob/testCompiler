@@ -1,5 +1,7 @@
 package tools;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * Created by baobaowang on 2018/3/21.
  */
@@ -33,5 +35,27 @@ public class Utils {
     //8进制
     public static boolean isOct(char c) {
         return (c >= '0' && c <= '7');
+    }
+
+    public static String getPrintableByte(byte b) {
+        if (b <= 31) {
+            byte bs[] = new byte[1];
+            bs[0] = (byte) (b + 64);
+            try {
+                return "^" + new String(bs, "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                return "err";
+            }
+        } else {
+            byte bs[] = new byte[1];
+            bs[0] = (byte) (b);
+            try {
+                return new String(bs, "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                return "err";
+            }
+        }
     }
 }
