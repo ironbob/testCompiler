@@ -33,17 +33,26 @@ public class Edge {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("type:");
+        if(type != EMPTY) {
+            sb.append("type:");
+        }
         if (type == CCL) {
-            sb.append("字符集( ");
+            sb.append("字符集 size=").append(transitionSet.size()).append(" (");
             for (Byte b :
                     transitionSet) {
                 sb.append(Utils.getPrintableByte(b)).append(" ");
             }
             sb.append(")");
-        }else{
-            sb.append("epsinal");
+        }else if(type == EPSILON){
+            sb.append("epsilon");
         }
         return sb.toString();
+    }
+
+
+    public static Edge createEpsilonEdge(){
+        Edge edge = new Edge();
+        edge.type = EPSILON;
+        return edge;
     }
 }

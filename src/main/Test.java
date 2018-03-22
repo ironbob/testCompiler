@@ -38,11 +38,14 @@ public class Test {
             LogUtil.printBound("汤普森构造");
             ThomposonConstrutor construtor = new ThomposonConstrutor();
             construtor.prepare("[1-9]");
-            construtor.prepare("[acd]");
             construtor.prepare("[^acd]");
-            construtor.prepare("[^a-z]");
-//            construtor.prepare("[\\^Aa-z]");
-            NfaPaire paire = construtor.term();
+            construtor.prepare("[^a-z]+");
+            construtor.prepare("[\\^Aa-z]");
+            construtor.prepare(".");
+            construtor.prepare("[acd]+");
+            construtor.prepare("[acd]?");
+//            construtor.prepare("[acd]*");
+            NfaPaire paire = construtor.construtor();
             System.out.println(paire.toString());
         } catch (RegularMacroException e) {
             e.printStackTrace();
